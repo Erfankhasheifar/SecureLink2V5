@@ -1,0 +1,58 @@
+<Window x:Class="FifoBridge.Receiver.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FIFO Bridge – Receiver (FTBA7CIZ)"
+        Width="540" Height="340" ResizeMode="CanMinimize">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- Device serial -->
+    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+           Content="Receiver Device Serial:" FontWeight="Bold"/>
+    <TextBox x:Name="SerialBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+             Margin="0,0,0,8" Text="FTBA7CIZ" VerticalContentAlignment="Center"/>
+
+    <!-- Output folder -->
+    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+           Content="Save-to Folder:" FontWeight="Bold"/>
+    <TextBox x:Name="FolderBox" Grid.Row="3" Grid.Column="0"
+             IsReadOnly="True" Margin="0,0,4,8"
+             Text="(choose output folder)" VerticalContentAlignment="Center"/>
+    <Button Grid.Row="3" Grid.Column="1" Content="Browse…"
+            Width="80" Margin="0,0,0,8" Click="BrowseClick"/>
+
+    <!-- Received filename label -->
+    <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+           Content="Received File:" FontWeight="Bold"/>
+    <TextBlock x:Name="ReceivedFileLabel" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+               Margin="0,0,0,8" Text="(waiting for transfer)" Foreground="Gray"/>
+
+    <!-- Progress and speed -->
+    <ProgressBar x:Name="Progress" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                 Height="20" Margin="0,0,0,4" Minimum="0" Maximum="100"/>
+    <TextBlock x:Name="StatusLabel" Grid.Row="7" Grid.Column="0"
+               Margin="0,4,0,0" Text="Idle" Foreground="Gray" VerticalAlignment="Top"/>
+
+    <!-- Buttons -->
+    <StackPanel Grid.Row="7" Grid.Column="1"
+                Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+      <Button x:Name="ReceiveButton" Content="Receive" Width="90"
+              Margin="0,0,8,0" Click="ReceiveClick"/>
+      <Button x:Name="CancelButton" Content="Cancel" Width="90"
+              Click="CancelClick" IsEnabled="False"/>
+    </StackPanel>
+  </Grid>
+</Window>

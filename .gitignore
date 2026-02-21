@@ -1,0 +1,22 @@
+# .NET build outputs
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# STM32CubeIDE / Eclipse build outputs
+Firmware/Debug/
+Firmware/Release/
+Firmware/**/*.o
+Firmware/**/*.d
+Firmware/**/*.lst
+Firmware/**/*.map
+Firmware/**/*.elf
+Firmware/**/*.hex
+Firmware/**/*.bin
+
+# FTDI DLL (not redistributable – user must obtain from FTDI)
+PC/**/FTD2XX.dll

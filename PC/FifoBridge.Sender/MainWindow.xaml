@@ -1,0 +1,51 @@
+<Window x:Class="FifoBridge.Sender.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FIFO Bridge – Sender (FTBA7CJ0)"
+        Width="540" Height="320" ResizeMode="CanMinimize">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- File selection -->
+    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+           Content="File to Send:" FontWeight="Bold"/>
+    <TextBox x:Name="FilePathBox" Grid.Row="1" Grid.Column="0"
+             IsReadOnly="True" Margin="0,0,4,8"
+             Text="(no file selected)" VerticalContentAlignment="Center"/>
+    <Button Grid.Row="1" Grid.Column="1" Content="Browse…"
+            Width="80" Margin="0,0,0,8" Click="BrowseClick"/>
+
+    <!-- Device serial -->
+    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+           Content="Sender Device Serial:" FontWeight="Bold"/>
+    <TextBox x:Name="SerialBox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+             Margin="0,0,0,8" Text="FTBA7CJ0A" VerticalContentAlignment="Center"/>
+
+    <!-- Progress and speed -->
+    <ProgressBar x:Name="Progress" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                 Height="20" Margin="0,0,0,4" Minimum="0" Maximum="100"/>
+    <TextBlock x:Name="StatusLabel" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+               Margin="0,0,0,8" Text="Idle" Foreground="Gray"/>
+
+    <!-- Buttons -->
+    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button x:Name="SendButton" Content="Send" Width="90"
+              Margin="0,0,8,0" Click="SendClick" IsEnabled="False"/>
+      <Button x:Name="CancelButton" Content="Cancel" Width="90"
+              Click="CancelClick" IsEnabled="False"/>
+    </StackPanel>
+  </Grid>
+</Window>
