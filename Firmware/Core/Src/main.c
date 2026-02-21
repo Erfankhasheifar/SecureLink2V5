@@ -125,9 +125,10 @@ static void MX_GPIO_Init(void)
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     /* Enable GPIO clocks */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOF_CLK_ENABLE();
-    __HAL_RCC_GPIOG_CLK_ENABLE();
     __HAL_RCC_GPIOH_CLK_ENABLE();  /* OSC pins */
 
     /* ------------------------------------------------------------------
@@ -150,42 +151,42 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
     /* ------------------------------------------------------------------
-     * FIFO#1 control (GPIOG):
-     *   Inputs : PG0 (RXF#), PG1 (TXE#), PG4 (CLKOUT)
-     *   Outputs: PG2 (RD#), PG3 (WR#), PG5 (OE#)
+     * FIFO#1 control (GPIOC):
+     *   Inputs : PC0 (RXF#), PC1 (TXE#), PC4 (CLKOUT)
+     *   Outputs: PC2 (RD#), PC3 (WR#), PC5 (OE#)
      * ------------------------------------------------------------------ */
     /* Inputs */
     GPIO_InitStruct.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /* Outputs – start de-asserted (high = inactive for active-low signals) */
     GPIO_InitStruct.Pin   = GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-    GPIOG->BSRR = GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5; /* RD#=1, WR#=1, OE#=1 */
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    GPIOC->BSRR = GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5; /* RD#=1, WR#=1, OE#=1 */
 
     /* ------------------------------------------------------------------
-     * FIFO#2 control (GPIOG):
-     *   Inputs : PG6 (RXF# opt), PG7 (TXE#), PG10 (CLKOUT opt)
-     *   Outputs: PG8 (RD# opt), PG9 (WR#), PG11 (OE# opt)
+     * FIFO#2 control (GPIOD):
+     *   Inputs : PD0 (RXF# opt), PD1 (TXE#), PD4 (CLKOUT opt)
+     *   Outputs: PD2 (RD# opt), PD3 (WR#), PD5 (OE# opt)
      * ------------------------------------------------------------------ */
     /* Inputs */
-    GPIO_InitStruct.Pin  = GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_10;
+    GPIO_InitStruct.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     /* Outputs – start de-asserted */
-    GPIO_InitStruct.Pin   = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_11;
+    GPIO_InitStruct.Pin   = GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-    GPIOG->BSRR = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_11; /* WR#=1, RD#=1, OE#=1 */
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    GPIOD->BSRR = GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5; /* RD#=1, WR#=1, OE#=1 */
 }
 
 /* ======================================================================== */

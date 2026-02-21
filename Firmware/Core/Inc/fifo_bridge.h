@@ -7,21 +7,21 @@
  *
  *  FIFO#1 (PC Sender -> MCU)  –  "read" side
  *    Data bus (input)  : PE0..PE7
- *    RXF#  (input)     : PG0   – low = data available
- *    TXE#  (input)     : PG1   – low = transmit buffer NOT full
- *    RD#   (output)    : PG2   – pull low to clock a byte out
- *    WR#   (output)    : PG3   – not used in read-only direction (keep high)
- *    CLKOUT(input)     : PG4   – 60 MHz bus clock from FT2232HL
- *    OE#   (output)    : PG5   – pull low to enable output drivers
+ *    RXF#  (input)     : PC0   – low = data available
+ *    TXE#  (input)     : PC1   – low = transmit buffer NOT full
+ *    RD#   (output)    : PC2   – pull low to clock a byte out
+ *    WR#   (output)    : PC3   – not used in read-only direction (keep high)
+ *    CLKOUT(input)     : PC4   – 60 MHz bus clock from FT2232HL
+ *    OE#   (output)    : PC5   – pull low to enable output drivers
  *
  *  FIFO#2 (MCU -> PC Receiver) – "write" side
  *    Data bus (output) : PF0..PF7
- *    RXF#  (input)     : PG6   – optional: low = FT2232HL has data for us
- *    TXE#  (input)     : PG7   – low = transmit buffer NOT full (we can write)
- *    RD#   (output)    : PG8   – optional
- *    WR#   (output)    : PG9   – pull low then high to clock a byte in
- *    CLKOUT(input)     : PG10  – optional: 60 MHz clock
- *    OE#   (output)    : PG11  – optional
+ *    RXF#  (input)     : PD0   – optional: low = FT2232HL has data for us
+ *    TXE#  (input)     : PD1   – low = transmit buffer NOT full (we can write)
+ *    RD#   (output)    : PD2   – optional
+ *    WR#   (output)    : PD3   – pull low then high to clock a byte in
+ *    CLKOUT(input)     : PD4   – optional: 60 MHz clock
+ *    OE#   (output)    : PD5   – optional
  */
 
 #ifndef FIFO_BRIDGE_H
@@ -36,8 +36,8 @@
 #define FIFO1_DATA_PORT   GPIOE
 #define FIFO1_DATA_MASK   0x00FFu
 
-/* FIFO#1 control – GPIOG */
-#define FIFO1_CTRL_PORT   GPIOG
+/* FIFO#1 control – GPIOC */
+#define FIFO1_CTRL_PORT   GPIOC
 #define FIFO1_RXF_PIN     GPIO_PIN_0   /* input  – active low */
 #define FIFO1_TXE_PIN     GPIO_PIN_1   /* input  – active low */
 #define FIFO1_RD_PIN      GPIO_PIN_2   /* output – active low */
@@ -49,14 +49,14 @@
 #define FIFO2_DATA_PORT   GPIOF
 #define FIFO2_DATA_MASK   0x00FFu
 
-/* FIFO#2 control – GPIOG */
-#define FIFO2_CTRL_PORT   GPIOG
-#define FIFO2_RXF_PIN     GPIO_PIN_6   /* input  – optional */
-#define FIFO2_TXE_PIN     GPIO_PIN_7   /* input  – active low */
-#define FIFO2_RD_PIN      GPIO_PIN_8   /* output – optional */
-#define FIFO2_WR_PIN      GPIO_PIN_9   /* output – active low */
-#define FIFO2_CLKOUT_PIN  GPIO_PIN_10  /* input  – optional */
-#define FIFO2_OE_PIN      GPIO_PIN_11  /* output – optional */
+/* FIFO#2 control – GPIOD */
+#define FIFO2_CTRL_PORT   GPIOD
+#define FIFO2_RXF_PIN     GPIO_PIN_0   /* input  – optional */
+#define FIFO2_TXE_PIN     GPIO_PIN_1   /* input  – active low */
+#define FIFO2_RD_PIN      GPIO_PIN_2   /* output – optional */
+#define FIFO2_WR_PIN      GPIO_PIN_3   /* output – active low */
+#define FIFO2_CLKOUT_PIN  GPIO_PIN_4   /* input  – optional */
+#define FIFO2_OE_PIN      GPIO_PIN_5   /* output – optional */
 
 /* ---- Direct-register helper macros --------------------------------- */
 
