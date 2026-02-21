@@ -1,102 +1,147 @@
-/**
- * @file cmsis_os2.c
- * @brief CMSIS-RTOS2 wrapper for FreeRTOS used by the FIFO_Bridge project.
+/*
+ * cmsis_os2.c – CMSIS-RTOS2 wrapper over FreeRTOS for FIFO_Bridge.
  *
- * This file provides the minimal CMSIS-RTOS2 API implementation required by
- * main.c and fifo_bridge.c:
+ * Implements the four CMSIS-RTOS2 functions used by main.c and fifo_bridge.c:
+ *   osKernelInitialize  →  (no-op; FreeRTOS initialises implicitly)
+ *   osKernelStart       →  vTaskStartScheduler()
+ *   osThreadNew         →  xTaskCreate()
+ *   osThreadYield       →  taskYIELD()
  *
- *   osKernelInitialize() – prepares the kernel before tasks are created.
- *   osKernelStart()      – hands control to the FreeRTOS scheduler.
- *   osThreadNew()        – creates a FreeRTOS task and returns its handle.
- *   osThreadYield()      – yields the CPU to the next ready task.
- *
- * Priority mapping
- * ----------------
- * CMSIS-RTOS2 priorities run from osPriorityIdle (1) to osPriorityISR (56).
- * FreeRTOS priorities run from tskIDLE_PRIORITY (0) upward.
- * Mapping: freertos_prio = cmsis_prio - osPriorityIdle
- *
- * Place this file in:
- *   Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
- * and add it to the STM32CubeIDE project build.
+ * CMSIS-RTOS2 priority mapping (0..56) → FreeRTOS priority (0..configMAX_PRIORITIES-1):
+ *   osPriorityNormal (24) → configMAX_PRIORITIES/2
+ *   The offset is CMSIS_RTOS_PRIORITY_OFFSET (24 = osPriorityNormal).
  */
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "cmsis_os.h"
 
-/* ======================================================================== */
-osStatus_t osKernelInitialize(void)
+/* ---- Constants --------------------------------------------------------- */
+
+/* The CMSIS-RTOS2 idle priority value. */
+#define CMSIS_RTOS_PRIORITY_IDLE    ( 1 )
+
+/* The CMSIS-RTOS2 "Normal" priority maps to a mid-level FreeRTOS priority.
+ * CMSIS priorities run 1..56, osPriorityNormal == 24.
+ * FreeRTOS priorities run 0..configMAX_PRIORITIES-1 (0 = idle).
+ * Map: FreeRTOS_prio = cmsis_prio - CMSIS_RTOS_PRIORITY_IDLE + 1 */
+static UBaseType_t prvCMSIS2FreeRTOSPriority( osPriority_t cmsis_prio )
 {
-    /* FreeRTOS does not require explicit kernel initialization before tasks
-       are created; the data structures are initialized lazily by xTaskCreate.
-       Return success to satisfy the CMSIS-RTOS2 API. */
+    BaseType_t freertos_prio;
+
+    if( cmsis_prio <= ( osPriority_t ) CMSIS_RTOS_PRIORITY_IDLE )
+    {
+        return tskIDLE_PRIORITY;
+    }
+
+    /* Linear mapping: shift so that osPriorityNormal gives a mid-level
+     * FreeRTOS priority. */
+    freertos_prio = ( BaseType_t ) cmsis_prio - ( BaseType_t ) CMSIS_RTOS_PRIORITY_IDLE;
+
+    if( freertos_prio >= ( BaseType_t ) configMAX_PRIORITIES )
+    {
+        freertos_prio = ( BaseType_t ) configMAX_PRIORITIES - 1;
+    }
+
+    return ( UBaseType_t ) freertos_prio;
+}
+
+/* ======================================================================== */
+
+/**
+ * @brief  Initialise the RTOS kernel.
+ *
+ * FreeRTOS requires no explicit kernel initialisation – the kernel is set up
+ * implicitly when the first task is created and the scheduler is started.
+ * This function simply returns osOK to satisfy the CMSIS-RTOS2 contract.
+ */
+osStatus_t osKernelInitialize( void )
+{
+    /* Nothing to do for FreeRTOS – return success. */
     return osOK;
 }
 
-/* ======================================================================== */
-osStatus_t osKernelStart(void)
+/* ----------------------------------------------------------------------- */
+
+/**
+ * @brief  Start the RTOS kernel scheduler.
+ *
+ * Calls vTaskStartScheduler().  On a successful start this function does not
+ * return.  It returns osError only if the scheduler could not be started
+ * (which typically indicates that there is not enough heap memory to create
+ * the idle task).
+ */
+osStatus_t osKernelStart( void )
 {
-    /* Hand control to the FreeRTOS scheduler – does not return on success. */
     vTaskStartScheduler();
 
-    /* Reaching here means there was insufficient heap for the idle task. */
+    /* vTaskStartScheduler() should only return if there is insufficient heap
+     * memory to create the idle task. */
     return osError;
 }
 
-/* ======================================================================== */
-osThreadId_t osThreadNew(osThreadFunc_t func,
-                         void *argument,
-                         const osThreadAttr_t *attr)
+/* ----------------------------------------------------------------------- */
+
+/**
+ * @brief  Create a thread and add it to active threads.
+ *
+ * Maps the CMSIS-RTOS2 osThreadAttr_t attributes to an xTaskCreate() call.
+ * Supports dynamic allocation only (configSUPPORT_DYNAMIC_ALLOCATION must
+ * be 1, which it is in this project's FreeRTOSConfig.h).
+ */
+osThreadId_t osThreadNew( osThreadFunc_t func,
+                          void * argument,
+                          const osThreadAttr_t * attr )
 {
-    TaskHandle_t handle = NULL;
-    uint32_t     stack_depth;
-    UBaseType_t  priority;
-    const char  *name;
+    TaskHandle_t task_handle = NULL;
+    const char * task_name   = "";
+    configSTACK_DEPTH_TYPE stack_depth = ( configSTACK_DEPTH_TYPE ) configMINIMAL_STACK_SIZE;
+    UBaseType_t ux_priority  = tskIDLE_PRIORITY + 1U;
 
-    if (attr != NULL)
-    {
-        /* Stack size in the attribute is in bytes; FreeRTOS expects words. */
-        stack_depth = (attr->stack_size > 0U)
-                      ? (attr->stack_size / sizeof(StackType_t))
-                      : (uint32_t)configMINIMAL_STACK_SIZE;
-
-        /* Map CMSIS-RTOS2 priority to FreeRTOS priority.
-           osPriorityIdle == 1, tskIDLE_PRIORITY == 0, so subtract 1. */
-        priority = (UBaseType_t)((int32_t)attr->priority - (int32_t)osPriorityIdle);
-        if ((int32_t)priority < (int32_t)tskIDLE_PRIORITY)
-        {
-            priority = tskIDLE_PRIORITY;
-        }
-        if (priority >= (UBaseType_t)configMAX_PRIORITIES)
-        {
-            priority = (UBaseType_t)(configMAX_PRIORITIES - 1U);
-        }
-
-        name = (attr->name != NULL) ? attr->name : "Task";
-    }
-    else
-    {
-        stack_depth = (uint32_t)configMINIMAL_STACK_SIZE;
-        priority    = tskIDLE_PRIORITY + 1U;
-        name        = "Task";
-    }
-
-    if (xTaskCreate((TaskFunction_t)func,
-                    name,
-                    (configSTACK_DEPTH_TYPE)stack_depth,
-                    argument,
-                    priority,
-                    &handle) != pdPASS)
+    if( func == NULL )
     {
         return NULL;
     }
 
-    return (osThreadId_t)handle;
+    if( attr != NULL )
+    {
+        if( attr->name != NULL )
+        {
+            task_name = attr->name;
+        }
+        if( attr->stack_size > 0U )
+        {
+            /* attr->stack_size is in bytes; FreeRTOS uses words (4 bytes each) */
+            stack_depth = ( configSTACK_DEPTH_TYPE ) ( attr->stack_size / sizeof( StackType_t ) );
+        }
+        if( attr->priority != osPriorityNone )
+        {
+            ux_priority = prvCMSIS2FreeRTOSPriority( attr->priority );
+        }
+    }
+
+    if( xTaskCreate( ( TaskFunction_t ) func,
+                     task_name,
+                     stack_depth,
+                     argument,
+                     ux_priority,
+                     &task_handle ) != pdPASS )
+    {
+        return NULL;
+    }
+
+    return ( osThreadId_t ) task_handle;
 }
 
-/* ======================================================================== */
-osStatus_t osThreadYield(void)
+/* ----------------------------------------------------------------------- */
+
+/**
+ * @brief  Yield control to the next ready thread.
+ *
+ * Triggers a PendSV context-switch request via the portYIELD() macro (which
+ * is called through the taskYIELD() wrapper).
+ */
+osStatus_t osThreadYield( void )
 {
     taskYIELD();
     return osOK;
