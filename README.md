@@ -141,20 +141,72 @@ GND              ──────── GND
 ## Firmware Setup
 
 ### Prerequisites
-- **STM32CubeIDE 1.14+** with STM32Cube FW_H7 V1.11.0 pack installed.
+- **STM32CubeIDE 1.14+** with **STM32Cube FW_H7 V1.11.0** (or later) pack installed.
 - ST-Link v2 or any SWD programmer.
+
+### Project Structure
+
+The repository now includes all required FreeRTOS V10.3.1 source files:
+
+```
+Firmware/
+├── FIFO_Bridge.ioc                 CubeMX configuration
+├── Core/
+│   ├── Inc/
+│   │   ├── FreeRTOSConfig.h        FreeRTOS configuration for STM32H750
+│   │   ├── cmsis_os.h              CMSIS-RTOS2 type declarations
+│   │   ├── fifo_bridge.h           GPIO macros & task prototypes
+│   │   ├── main.h                  HAL includes & error handler
+│   │   └── ring_buffer.h           Lock-free SPSC ring buffer
+│   └── Src/
+│       ├── main.c                  Clock + GPIO init, FreeRTOS startup
+│       └── fifo_bridge.c           ReaderTask + WriterTask
+└── Middlewares/Third_Party/FreeRTOS/Source/
+    ├── include/                    FreeRTOS kernel headers
+    ├── portable/GCC/ARM_CM7/r0p1/ Cortex-M7 port (port.c, portmacro.h)
+    ├── portable/MemMang/heap_4.c  Dynamic memory allocator
+    ├── CMSIS_RTOS_V2/cmsis_os2.c  CMSIS-RTOS2 → FreeRTOS wrapper
+    ├── list.c                      Linked list implementation
+    └── tasks.c                     Task scheduler
+```
+
+### Importing into STM32CubeIDE
+
+> **Note:** The `.ioc` file must be opened from *within* an STM32CubeIDE project.
+> Opening it directly from File Explorer shows a blank page because CubeMX
+> requires a project context.
+
+**Method A – Fresh project (recommended):**
+
+1. Open **STM32CubeIDE**.
+2. `File → New → STM32 Project from an Existing STM32CubeMX Configuration File (.ioc)`.
+3. Browse to `Firmware/FIFO_Bridge.ioc` → **Finish**.
+4. CubeMX will open. Click **Generate Code** to populate the HAL and startup
+   files (the FreeRTOS middleware is already in the repository).
+5. In the **C/C++ Build → Settings** for each configuration add these
+   **include paths**:
+   - `${ProjDirPath}/Core/Inc`
+   - `${ProjDirPath}/Middlewares/Third_Party/FreeRTOS/Source/include`
+   - `${ProjDirPath}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1`
+6. Add the following **source files** to the build (right-click → *Add Files*):
+   - `Middlewares/Third_Party/FreeRTOS/Source/list.c`
+   - `Middlewares/Third_Party/FreeRTOS/Source/tasks.c`
+   - `Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1/port.c`
+   - `Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c`
+   - `Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c`
+
+**Method B – Import existing project:**
+
+1. `File → Import → General → Existing Projects into Workspace`.
+2. Set the root directory to the `Firmware/` folder.
+3. Select `FIFO_Bridge` and click **Finish**.
+4. If the project doesn't have a `.cproject` file, follow Method A instead.
 
 ### Steps
 
-1. **Open project** in STM32CubeIDE:
-   `File → Open Projects from File System → Firmware/`
-
-2. **Regenerate code** (optional – only if you change the `.ioc`):
-   Double-click `FIFO_Bridge.ioc` → **Generate Code**.
-
-3. **Build**: `Project → Build All` (Ctrl+B).
-
-4. **Flash**: `Run → Debug` with ST-Link connected to the DevEBox SWD header.
+1. **Import** the project using one of the methods above.
+2. **Build**: `Project → Build All` (Ctrl+B).
+3. **Flash**: `Run → Debug` with ST-Link connected to the DevEBox SWD header.
 
 ### Clock Configuration
 The `.ioc` is set up for a **25 MHz HSE crystal** (fitted on the DevEBox):
