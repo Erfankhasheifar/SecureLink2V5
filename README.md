@@ -99,12 +99,12 @@ ADBUS5  (D5)    ──────► PE5  (FIFO1_D5)
 ADBUS6  (D6)    ──────► PE6  (FIFO1_D6)
 ADBUS7  (D7)    ──────► PE7  (FIFO1_D7)
 
-ACBUS0  (RXF#)  ──────► PG0  (FIFO1_RXF)  [input to MCU, active-low]
-ACBUS1  (TXE#)  ──────► PG1  (FIFO1_TXE)  [input to MCU, active-low]
-ACBUS2  (RD#)   ◄──────  PG2  (FIFO1_RD)   [output from MCU, active-low]
-ACBUS3  (WR#)   ◄──────  PG3  (FIFO1_WR)   [tied high – read-only mode]
-ACBUS5  (CLKOUT)──────► PG4  (FIFO1_CLK)  [60 MHz bus clock, input]
-ACBUS6  (OE#)   ◄──────  PG5  (FIFO1_OE)   [output from MCU, active-low]
+ACBUS0  (RXF#)  ──────► PC0  (FIFO1_RXF)  [input to MCU, active-low]
+ACBUS1  (TXE#)  ──────► PC1  (FIFO1_TXE)  [input to MCU, active-low]
+ACBUS2  (RD#)   ◄──────  PC2  (FIFO1_RD)   [output from MCU, active-low]
+ACBUS3  (WR#)   ◄──────  PC3  (FIFO1_WR)   [tied high – read-only mode]
+ACBUS5  (CLKOUT)──────► PC4  (FIFO1_CLK)  [60 MHz bus clock, input]
+ACBUS6  (OE#)   ◄──────  PC5  (FIFO1_OE)   [output from MCU, active-low]
 
 GND             ──────── GND
 ```
@@ -123,12 +123,12 @@ PF5  (FIFO2_D5) ──────► ADBUS5  (D5)
 PF6  (FIFO2_D6) ──────► ADBUS6  (D6)
 PF7  (FIFO2_D7) ──────► ADBUS7  (D7)
 
-PG6  (FIFO2_RXF) ◄──────  ACBUS0  (RXF#)  [optional, input]
-PG7  (FIFO2_TXE) ◄──────  ACBUS1  (TXE#)  [input to MCU, active-low]
-PG8  (FIFO2_RD)  ──────►  ACBUS2  (RD#)   [optional output]
-PG9  (FIFO2_WR)  ──────►  ACBUS3  (WR#)   [output from MCU, active-low]
-PG10 (FIFO2_CLK) ◄──────  ACBUS5  (CLKOUT)[optional 60 MHz input]
-PG11 (FIFO2_OE)  ──────►  ACBUS6  (OE#)   [optional output]
+PD0  (FIFO2_RXF) ◄──────  ACBUS0  (RXF#)  [optional, input]
+PD1  (FIFO2_TXE) ◄──────  ACBUS1  (TXE#)  [input to MCU, active-low]
+PD2  (FIFO2_RD)  ──────►  ACBUS2  (RD#)   [optional output]
+PD3  (FIFO2_WR)  ──────►  ACBUS3  (WR#)   [output from MCU, active-low]
+PD4  (FIFO2_CLK) ◄──────  ACBUS5  (CLKOUT)[optional 60 MHz input]
+PD5  (FIFO2_OE)  ──────►  ACBUS6  (OE#)   [optional output]
 
 GND              ──────── GND
 ```
@@ -264,10 +264,11 @@ CRC32 uses the standard ISO 3309 polynomial (same as zlib/zip).
 |---------|-------------|-----|
 | `D2XX error FT_DEVICE_NOT_FOUND` | FT_Prog not applied, or wrong serial | Re-run FT_Prog; check serial in app |
 | `D2XX error FT_DEVICE_NOT_OPENED` | VCP driver still bound | Switch to D2XX Direct in FT_Prog |
-| Firmware hangs at first byte | OE# not asserted / wiring issue | Check PG5 → ACBUS6 and GND |
+| Firmware hangs at first byte | OE# not asserted / wiring issue | Check PC5 → ACBUS6 and GND |
 | CRC mismatch | Data corruption in GPIO wiring | Shorten wires; check common GND |
 | Transfer very slow (< 1 MB/s) | USB HS not negotiated | Use USB 2.0 port; check cable |
 | `InvalidOperationException` in Receiver | Header bytes not yet available | Sender must start first; retry |
+| GPIO signals absent / firmware stuck | DevEBox variant does not expose Port G | This firmware uses **PC0–PC5** (FIFO1) and **PD0–PD5** (FIFO2) instead of PG. Verify wiring matches the table above; some early DevEBox silk-screens label Port G but the header pins are not connected. |
 
 ---
 
